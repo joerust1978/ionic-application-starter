@@ -1,0 +1,7 @@
+{
+  "name": "hackathon-starter",
+  "integrations": {
+    "cordova": {}
+  },
+  "type": "angular"
+}
