@@ -27,39 +27,35 @@ constructor(
     this.presentLoading(loading);
 
     //the permissions your facebook app needs from the user
-    const permissions = ["public_profile", "email"];
+     const permissions = ["public_profile", "email", "user_friends"];
 
-    this.fb.login(permissions)
-    .then(response => {
+    this.fb.login(permissions).then(response => {
       let userId = response.authResponse.userID;
       //Getting name and email properties
       //Learn more about permissions in https://developers.facebook.com/docs/facebook-login/permissions
 
-      this.fb.api("/me?fields=name,email", permissions)
-      .then(user => {
-        user.picture = "https://graph.facebook.com/" + userId + "/picture?type=large";
-        //now we have the users info, let's save it in the NativeStorage
-        this.nativeStorage.setItem('facebook_user',
-        {
-          name: user.name,
-          email: user.email,
-          picture: user.picture
-        })
-        .then(() => {
-          this.router.navigate(["/home"]);
-          loading.dismiss();
+      this.fb.api("/me?fields=name,email", permissions).then(user => {
+      	this.fb.api("/me/friends", permissions).then(friendData => {
+      		user.picture = "https://graph.facebook.com/" + userId + "/picture?type=large";
+			this.nativeStorage.setItem('facebook_user',
+        	{
+          		name: user.name,
+          		email: user.email,
+          		picture: user.picture,
+          		friends: friendData.data
+        	}).then(() => {
+          		this.router.navigate(["/home"]);
+          		loading.dismiss();
+        	}, error => {
+          		console.log(error);
+          		loading.dismiss();
+        	})
         }, error => {
-          console.log(error);
-          loading.dismiss();
+          	console.log(error);
+          	loading.dismiss();
+        	})
         })
       })
-    }, error =>{
-      console.log(error);
-      if(!this.platform.is('cordova')){
-        this.presentAlert();
-      }
-      loading.dismiss();
-    });
   }
 
   async presentAlert() {
